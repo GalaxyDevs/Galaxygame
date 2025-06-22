@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Muzz Galaxy - Fase 3</title>
+  <style>
+    html, body { margin: 0; padding: 0; overflow: hidden; background: black; font-family: Arial, sans-serif; }
+    #connectButton {
+      position: absolute; top: 20px; right: 20px; z-index: 10;
+      padding: 10px 20px; background: #00ffcc; color: #000; border: none;
+      font-weight: bold; border-radius: 8px; cursor: pointer;
+    }
+    canvas { display: block; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.6.2/dist/ethers.umd.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAf_pL5QcltKHR9ghvMk7qyJOmh0ihO4a4",
+      authDomain: "galaxymuzz.firebaseapp.com",
+      projectId: "galaxymuzz",
+      storageBucket: "galaxymuzz.firebasestorage.app",
+      messagingSenderId: "710081738394",
+      appId: "1:710081738394:web:e79cd08b6ecc86c8ef5123",
+      measurementId: "G-W1L7F5MHN0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const connectBtn = document.getElementById("connectButton");
+    let userWallet = null;
+
+    async function switchToGenesys() {
+      const chainIdHex = '0x407B';
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: chainIdHex }]
+        });
+      } catch (error) {
+        if (error.code === 4902) {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: chainIdHex,
+              chainName: 'Genesys Mainnet',
+              nativeCurrency: { name: 'Genesys', symbol: 'GSYS', decimals: 18 },
+              rpcUrls: ['https://rpc.genesys.network'],
+              blockExplorerUrls: ['https://gchainexplorer.genesys.network']
+            }]
+          });
+        }
+      }
+    }
+
+    async function conectarWallet() {
+      if (!window.ethereum) return alert("MetaMask no detectado");
+      await switchToGenesys();
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+      const message = "Inicio de sesión en Muzz Galaxy con wallet: " + address;
+      const signature = await signer.signMessage(message);
+      userWallet = address;
+      alert("Wallet conectada: " + userWallet);
+      const ref = doc(db, "puntuaciones", userWallet);
+      await setDoc(ref, { score: 120, level: 3 }, { merge: true });
+    }
+
+    connectBtn.onclick = conectarWallet;
+  </script>
+</head>
+<body>
+  <button id="connectButton">Conectar Wallet</button>
+</body>
+</html>
