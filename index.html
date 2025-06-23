@@ -3,36 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Muzz Galaxy - Fase 3</title>
+  <title>Muzz Galaxy - Fase 4</title>
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: black;
-      font-family: Arial, sans-serif;
+      margin: 0; padding: 0; overflow: hidden;
+      background: black; font-family: Arial, sans-serif;
     }
     #connectButton {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 10;
-      padding: 10px 20px;
-      background: #00ffcc;
-      color: #000;
-      border: none;
-      font-weight: bold;
-      border-radius: 8px;
+      position: absolute; top: 20px; right: 20px; z-index: 10;
+      padding: 10px 20px; background: #00ffcc; color: #000;
+      border: none; font-weight: bold; border-radius: 8px;
       cursor: pointer;
     }
     canvas { display: block; }
   </style>
 
-  <!-- Phaser + Ethers -->
+  <!-- Phaser y Ethers.js -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.6.2/dist/ethers.umd.min.js"></script>
 
-  <!-- Firebase + Juego -->
+  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -53,7 +43,7 @@
     let userWallet = null;
 
     async function switchToGenesys() {
-      const chainIdHex = '0x407B'; // Genesys Mainnet
+      const chainIdHex = '0x407B';
       try {
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
@@ -82,16 +72,24 @@
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
+        const balance = await provider.getBalance(address);
+        const gsys = parseFloat(ethers.formatEther(balance));
+
+        if (gsys < 2000) {
+          alert("❌ Saldo insuficiente: necesitas al menos 2,000 GSYS para jugar. Tu saldo: " + gsys.toFixed(2));
+          return;
+        }
+
         const message = "Inicio de sesión en Muzz Galaxy con wallet: " + address;
         const signature = await signer.signMessage(message);
         userWallet = address;
-        alert("✅ Wallet conectada: " + userWallet);
+
+        alert("✅ Wallet conectada: " + userWallet + " | Saldo: " + gsys.toFixed(2) + " GSYS");
 
         const ref = doc(db, "puntuaciones", userWallet);
-        await setDoc(ref, { score: 120, level: 3 }, { merge: true });
+        await setDoc(ref, { score: 120, level: 4, wallet: userWallet }, { merge: true });
 
-        iniciarJuego(); // 👈 Inicia el juego
-
+        iniciarJuego();
       } catch (err) {
         console.error("❌ Error al conectar:", err);
         alert("Hubo un error al conectar con MetaMask.");
@@ -125,9 +123,7 @@
         });
       }
 
-      function update() {
-        // lógica futura del juego
-      }
+      function update() {}
     }
 
     connectBtn.onclick = conectarWallet;
