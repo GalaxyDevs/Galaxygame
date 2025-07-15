@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,42 +41,35 @@
 </div>
 
 <script>
-  const tokenAddress = "0xef3daa5fda8ad7aabff4658f1f78061fd626b8f0"; // MUZZ token
-  const tokenABI = [
-    "function balanceOf(address account) view returns (uint256)"
-  ];
-
   async function loginWithWallet() {
     if (!window.ethereum) {
-      alert("Necesitas MetaMask o una wallet Web3 instalada.");
+      alert("❌ Wallet Web3 no detectada. Usa el navegador de MetaMask.");
       return;
     }
 
     try {
-      // Conexión a wallet
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
       await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
       const address = await signer.getAddress();
 
-      // Firma de mensaje
       const message = "Iniciar sesión en Papoclub";
       const signature = await signer.signMessage(message);
 
-      // Validación de holder del token MUZZ
+      const tokenAddress = "0xef3daa5fda8ad7aabff4658f1f78061fd626b8f0";
+      const tokenABI = ["function balanceOf(address) view returns (uint256)"];
       const contract = new ethers.Contract(tokenAddress, tokenABI, provider);
       const balance = await contract.balanceOf(address);
 
       if (balance.gt(0)) {
-        alert("✅ Wallet conectada\n" + address + "\n\n🔐 Firma válida\n🪙 Holder verificado");
-        goToScreen('screen-main');
+        alert("✅ Login exitoso como holder del token MUZZ\n" + address);
+        goToScreen("screen-main");
       } else {
-        alert("🚫 No eres holder del token MUZZ.\n\nDebes tener al menos 1 token para acceder.");
+        alert("🚫 No eres holder del token MUZZ.");
       }
-
     } catch (err) {
-      console.error(err);
-      alert("❌ Error al conectar wallet o firmar mensaje.");
+      console.error("Error Web3:", err);
+      alert("❌ Error al conectar o firmar. Intenta nuevamente o revisa tu wallet.");
     }
   }
 
