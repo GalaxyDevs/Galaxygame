@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>MuzzSnap</title>
-  @borincanopr
+  <title>Papoclub Login Web3</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
     body { background: white; color: #000; }
@@ -17,137 +17,75 @@
 
     .btn { display: block; width: 100%; padding: 15px; margin: 20px 0; border: none; border-radius: 30px; font-size: 16px; cursor: pointer; }
     .btn-primary { background: #a7443c; color: white; }
-    .btn-secondary { background: #000; color: white; }
 
     .center { text-align: center; margin-top: 20px; }
-
-    .message, .community { border-bottom: 1px solid #ddd; padding: 15px 0; }
-    .message strong, .community strong { display: block; }
-
-    .nav-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 60px;
-      background: #fff;
-      border-top: 1px solid #ccc;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-    }
-
-    .nav-bar button {
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-    }
-
-    .search-bar {
-      padding: 10px;
-      border: 1px solid #ccc;
-      width: 100%;
-      border-radius: 10px;
-      margin: 15px 0;
-    }
-
-    .fab {
-      position: fixed;
-      bottom: 80px;
-      right: 20px;
-      background: #000;
-      color: white;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      font-size: 24px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
 
-  <!-- Login screen -->
-  <div id="screen-login" class="screen active">
-    <div class="logo">
-      <img src="https://assets.coingecko.com/coins/images/35527/standard/muzz-token-200.png?1709024198" alt="Logo" />
-    </div>
-    <h2 class="center">Welcome to MuzzSnap</h2>
-    <button class="btn btn-primary" onclick="goToScreen('screen-messages')">📲 Connect Mobile Wallet</button>
-    <div class="center">Don't have a mobile wallet?</div>
-    <button class="btn btn-secondary" onclick="goToScreen('screen-messages')">💻 Connect Holders</button>
+<!-- Login screen -->
+<div id="screen-login" class="screen active">
+  <div class="logo">
+    <img src="https://assets.coingecko.com/coins/images/35527/standard/muzz-token-200.png?1709024198" alt="Logo" />
   </div>
+  <h2 class="center">Welcome to Papoclub</h2>
+  <button class="btn btn-primary" onclick="loginWithWallet()">🔐 Connect Wallet</button>
+  <div class="center" style="margin-top: 10px; font-size: 14px;">Solo para holders del token MUZZ</div>
+</div>
 
-  <!-- Messages screen -->
-  <div id="screen-messages" class="screen">
-    <h2>Messages</h2>
-    <input class="search-bar" placeholder="Search for people and groups" />
-    <div class="message">
-      <strong> @borincanopr</strong>
-      You: I would greatly appreciate if you could retweet this if you think its worthy :)
-    </div>
-    <div class="message">
-      <strong>... @OneMaster</strong>
-      You accepted the request
-    </div>
-    <div class="message">
-      <strong>@borincanopr</strong>
-      You accepted the request
-    </div>
-    <div class="message">
-      <strong>... @OneMaster</strong>
-       Hi Bori, let me see what I can do for you...
-    </div>
-    <div class="fab" onclick="alert('New message!')">✉️</div>
-    <div class="nav-bar">
-      <button onclick="goToScreen('screen-login')">🏠</button>
-      <button onclick="goToScreen('screen-messages')">💬</button>
-      <button onclick="goToScreen('screen-communities')">👥</button>
-      <button onclick="alert('Notifications')">🔔</button>
-      <button onclick="goToScreen('screen-messages')">📨</button>
-    </div>
-  </div>
+<!-- Protected screen -->
+<div id="screen-main" class="screen">
+  <h2>✅ Bienvenido a Papoclub</h2>
+  <p style="margin-top: 20px;">Tu wallet está conectada y validada como holder del token MUZZ.</p>
+</div>
 
-  <!-- Communities screen -->
-  <div id="screen-communities" class="screen">
-    <h2>Notifications</h2>
-    <input class="search-bar" placeholder="Search for people and groups" />
-    <div class="community">
-      <strong>X.com</strong>
-      2,565 members<br />
-      the world's most powerful AI model is here,meet Grok 4.
-      
-13/07/25
-    </div>
-    <div class="community">
-      <strong>Blocklens</strong>
-      2,565 members<br />
-      BULLISH WEEK COMING
+<script>
+  const tokenAddress = "0xef3daa5fda8ad7aabff4658f1f78061fd626b8f0"; // MUZZ token
+  const tokenABI = [
+    "function balanceOf(address account) view returns (uint256)"
+  ];
 
-🤑🤑🤑🤑
-14/07/25
-    </div>
-    <div class="nav-bar">
-      <button onclick="goToScreen('screen-login')">🏠</button>
-      <button onclick="goToScreen('screen-messages')">💬</button>
-      <button onclick="goToScreen('screen-communities')">👥</button>
-      <button onclick="alert('Notifications')">🔔</button>
-      <button onclick="goToScreen('screen-messages')">📨</button>
-    </div>
-  </div>
-
-  <script>
-    function goToScreen(id) {
-      document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
-      });
-      document.getElementById(id).classList.add('active');
+  async function loginWithWallet() {
+    if (!window.ethereum) {
+      alert("Necesitas MetaMask o una wallet Web3 instalada.");
+      return;
     }
-  </script>
+
+    try {
+      // Conexión a wallet
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+      const address = await signer.getAddress();
+
+      // Firma de mensaje
+      const message = "Iniciar sesión en Papoclub";
+      const signature = await signer.signMessage(message);
+
+      // Validación de holder del token MUZZ
+      const contract = new ethers.Contract(tokenAddress, tokenABI, provider);
+      const balance = await contract.balanceOf(address);
+
+      if (balance.gt(0)) {
+        alert("✅ Wallet conectada\n" + address + "\n\n🔐 Firma válida\n🪙 Holder verificado");
+        goToScreen('screen-main');
+      } else {
+        alert("🚫 No eres holder del token MUZZ.\n\nDebes tener al menos 1 token para acceder.");
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error al conectar wallet o firmar mensaje.");
+    }
+  }
+
+  function goToScreen(id) {
+    document.querySelectorAll('.screen').forEach(screen => {
+      screen.classList.remove('active');
+    });
+    document.getElementById(id).classList.add('active');
+  }
+</script>
+
 </body>
 </html>
----TERMINANDO LO QUE NUNCA COMENZARON...--
