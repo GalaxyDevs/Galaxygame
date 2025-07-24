@@ -1,85 +1,1312 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Papoclub Login Web3</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <title>MuzzSnap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-    body { background: white; color: #000; }
+    * {
+      box-sizing: border-box;
+    }
 
-    .screen { display: none; padding: 20px; height: 100vh; overflow-y: auto; }
-    .active { display: block; }
+    body {
+      background: linear-gradient(135deg, #1a0033, #330066);
+      color: #e6ccff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-    .logo { display: flex; justify-content: center; margin-top: 50px; }
-    .logo img { width: 80px; }
+    .login-container {
+      background: rgba(26, 0, 51, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 8px 32px rgba(153, 102, 255, 0.3);
+      border: 1px solid rgba(153, 102, 255, 0.2);
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+      animation: fadeIn 0.6s ease-out;
+    }
 
-    .btn { display: block; width: 100%; padding: 15px; margin: 20px 0; border: none; border-radius: 30px; font-size: 16px; cursor: pointer; }
-    .btn-primary { background: #a7443c; color: white; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-    .center { text-align: center; margin-top: 20px; }
+    .logo {
+      font-size: 4em;
+      margin-bottom: 20px;
+      text-shadow: 0 0 30px #9966ff;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 20px #9966ff; }
+      to { text-shadow: 0 0 40px #9966ff, 0 0 60px #9966ff; }
+    }
+
+    .title {
+      font-size: 2.2em;
+      margin-bottom: 15px;
+      background: linear-gradient(45deg, #cc99ff, #9966ff, #6600cc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: rgba(230, 204, 255, 0.8);
+      margin-bottom: 40px;
+      font-size: 1.1em;
+      line-height: 1.5;
+    }
+
+    .wallet-section {
+      margin: 30px 0;
+    }
+
+    .wallet-btn {
+      background: linear-gradient(145deg, #6600cc, #4d0099);
+      border: none;
+      color: white;
+      padding: 18px 40px;
+      font-weight: bold;
+      font-size: 1.3em;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 20px rgba(102, 0, 204, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .wallet-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .wallet-btn:hover::before {
+      left: 100%;
+    }
+
+    .wallet-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(102, 0, 204, 0.6);
+    }
+
+    .wallet-btn:active {
+      transform: translateY(-1px);
+    }
+
+    .wallet-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .wallet-btn .icon {
+      font-size: 1.5em;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+    }
+
+    .status-card {
+      background: rgba(51, 0, 102, 0.6);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 25px 0;
+      border-left: 4px solid;
+      animation: slideIn 0.4s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .status-success {
+      border-left-color: #9966ff;
+      background: rgba(153, 102, 255, 0.1);
+      color: #9966ff;
+    }
+
+    .status-error {
+      border-left-color: #ff6699;
+      background: rgba(255, 102, 153, 0.1);
+      color: #ff6699;
+    }
+
+    .status-warning {
+      border-left-color: #ffcc66;
+      background: rgba(255, 204, 102, 0.1);
+      color: #ffcc66;
+    }
+
+    .status-loading {
+      border-left-color: #9966ff;
+      background: rgba(153, 102, 255, 0.1);
+      color: #9966ff;
+    }
+
+    .wallet-info {
+      background: rgba(51, 0, 102, 0.5);
+      border-radius: 16px;
+      padding: 25px;
+      margin: 25px 0;
+      border: 1px solid rgba(153, 102, 255, 0.3);
+      animation: slideIn 0.5s ease-out;
+    }
+
+    .wallet-details {
+      display: grid;
+      gap: 15px;
+      text-align: left;
+    }
+
+    .wallet-detail {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(153, 102, 255, 0.1);
+    }
+
+    .wallet-detail:last-child {
+      border-bottom: none;
+    }
+
+    .wallet-label {
+      font-weight: 600;
+      color: rgba(204, 153, 255, 0.8);
+    }
+
+    .wallet-value {
+      font-family: 'Courier New', monospace;
+      color: #cc99ff;
+      background: rgba(153, 102, 255, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .network-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .network-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #9966ff;
+      box-shadow: 0 0 10px #9966ff;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .install-wallet {
+      background: rgba(255, 102, 153, 0.1);
+      border: 2px solid #ff6699;
+      border-radius: 16px;
+      padding: 25px;
+      margin: 25px 0;
+      color: #ff6699;
+    }
+
+    .install-link {
+      display: inline-block;
+      background: #ff6699;
+      color: white;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .install-link:hover {
+      background: #ff99bb;
+      transform: translateY(-2px);
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(153, 102, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #9966ff;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .continue-btn {
+      background: linear-gradient(145deg, #9966ff, #6600cc);
+      border: none;
+      color: white;
+      padding: 16px 40px;
+      font-weight: bold;
+      font-size: 1.2em;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 20px;
+      box-shadow: 0 4px 20px rgba(153, 102, 255, 0.3);
+    }
+
+    .continue-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(153, 102, 255, 0.4);
+    }
+
+    .continue-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .network-switch-btn {
+      background: linear-gradient(145deg, #ffcc66, #ff9933);
+      border: none;
+      color: #330066;
+      padding: 10px 20px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9em;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .network-switch-btn:hover {
+      background: linear-gradient(145deg, #ffd699, #ffcc66);
+      transform: translateY(-1px);
+    }
+
+    .debug-info {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(26, 0, 51, 0.8);
+      color: #9966ff;
+      padding: 10px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8em;
+      max-width: 300px;
+      display: none;
+    }
+
+    .filter-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .filter-btn {
+      background: rgba(102, 0, 204, 0.3);
+      border: 1px solid rgba(153, 102, 255, 0.3);
+      color: #e6ccff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      background: rgba(102, 0, 204, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+      background: #9966ff;
+      color: #1a0033;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      .login-container {
+        padding: 25px 15px;
+        margin: 10px;
+        border-radius: 20px;
+      }
+
+      .title {
+        font-size: 1.8em;
+      }
+
+      .subtitle {
+        font-size: 1em;
+      }
+
+      .wallet-btn {
+        padding: 16px 25px;
+        font-size: 1.1em;
+      }
+
+      .wallet-details {
+        font-size: 0.9em;
+      }
+
+      .wallet-value {
+        font-size: 0.8em;
+        word-break: break-all;
+      }
+
+      .install-wallet {
+        padding: 20px 15px;
+      }
+
+      .install-link {
+        padding: 12px 20px;
+        font-size: 0.9em;
+        display: block;
+        text-align: center;
+        margin: 10px 0;
+      }
+
+      /* Optimizaciones específicas para móvil */
+      .wallet-btn {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+
+      .continue-btn {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+
+      /* Mejoras para pantallas muy pequeñas */
+      @media (max-height: 600px) {
+        .login-container {
+          padding: 20px 15px;
+        }
+
+        .logo {
+          font-size: 3em;
+          margin-bottom: 15px;
+        }
+
+        .title {
+          font-size: 1.6em;
+          margin-bottom: 10px;
+        }
+
+        .subtitle {
+          margin-bottom: 25px;
+        }
+      }
+
+      /* Optimizaciones para landscape en móviles */
+      @media (orientation: landscape) and (max-height: 500px) {
+        .login-container {
+          max-height: 90vh;
+          overflow-y: auto;
+          padding: 15px;
+        }
+
+        .logo {
+          font-size: 2.5em;
+          margin-bottom: 10px;
+        }
+
+        .title {
+          font-size: 1.5em;
+          margin-bottom: 8px;
+        }
+
+        .subtitle {
+          margin-bottom: 20px;
+          font-size: 0.9em;
+        }
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="login-container">
+    <div class="logo">📸</div>
+    <h1 class="title">MuzzSnap</h1>
+    <p class="subtitle">Connect your wallet to start<br>creating and sharing moments</p>
 
-<!-- Login screen -->
-<div id="screen-login" class="screen active">
-  <div class="logo">
-    <img src="https://assets.coingecko.com/coins/images/35527/standard/muzz-token-200.png?1709024198" alt="Logo" />
+    <div class="wallet-section">
+      <button id="connectMobile" class="wallet-btn">
+        <span class="icon">📱</span>
+        <span id="mobileBtnText">Connect Mobile Wallet</span>
+      </button>
+
+      <button id="connectDesktop" class="wallet-btn">
+        <span class="icon">💻</span>
+        <span id="desktopBtnText">Connect with Desktop Wallet</span>
+      </button>
+
+      <p style="color: #cc99ff; margin-top: 15px;">Don't have a mobile wallet?</p>
+    </div>
+
+    <div class="filter-options">
+      <button class="filter-btn">Original</button>
+      <button class="filter-btn">Bright</button>
+      <button class="filter-btn">Story</button>
+      <button class="filter-btn">Natural</button>
+      <button class="filter-btn">Warm</button>
+      <button class="filter-btn">Dew</button>
+    </div>
+
+    <div id="walletInfo" class="wallet-info" style="display: none;">
+      <div class="wallet-details">
+        <div class="wallet-detail">
+          <span class="wallet-label">Address:</span>
+          <span id="walletAddress" class="wallet-value">-</span>
+        </div>
+        <div class="wallet-detail">
+          <span class="wallet-label">Network:</span>
+          <div class="network-indicator">
+            <div class="network-dot"></div>
+            <span id="networkName" class="wallet-value">-</span>
+          </div>
+        </div>
+        <div class="wallet-detail">
+          <span class="wallet-label">Balance:</span>
+          <span id="walletBalance" class="wallet-value">-</span>
+        </div>
+      </div>
+      <button id="switchNetwork" class="network-switch-btn" style="display: none;">
+        Switch to Ethereum Mainnet
+      </button>
+    </div>
+
+    <div id="statusMessage" class="status-card" style="display: none;">
+      <div id="statusContent"></div>
+    </div>
+
+    <div id="installWallet" class="install-wallet" style="display: none;">
+      <h3>⚠️ Wallet Not Detected</h3>
+      <p>You need to install a wallet to use MuzzSnap</p>
+      <a href="https://metamask.io/download/" target="_blank" class="install-link">
+        Install Wallet
+      </a>
+    </div>
+
+    <button id="continueBtn" class="continue-btn" style="display: none;" disabled>
+      ✨ Continue to MuzzSnap
+    </button>
   </div>
-  <h2 class="center">Welcome to Papoclub</h2>
-  <button class="btn btn-primary" onclick="console.log('CLICK!'); alert(window.ethereum ? 'ETH OK' : 'NO ETH');">🔐 Connect Wallet</button>
-  <div class="center" style="margin-top: 10px; font-size: 14px;">Solo para holders del token MUZZ</div>
-</div>
 
-<!-- Protected screen -->
-<div id="screen-main" class="screen">
-  <h2>✅ Bienvenido a Papoclub</h2>
-  <p style="margin-top: 20px;">Tu wallet está conectada y validada como holder del token MUZZ.</p>
-</div>
+  <div id="debugInfo" class="debug-info"></div>
 
-<script>
-  async function loginWithWallet() {
-    if (!window.ethereum) {
-      alert("❌ Wallet Web3 no detectada. Usa el navegador de MetaMask.");
-      return;
-    }
+  <script>
+    // ===========================================
+    // CONFIGURATION AND GLOBAL VARIABLES
+    // ===========================================
 
-    try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-      await provider.send("eth_requestAccounts", []);
-      const signer = provider.getSigner();
-      const address = await signer.getAddress();
+    const SUPPORTED_NETWORKS = {
+      '0x1': { name: 'Ethereum Mainnet', symbol: 'ETH', preferred: true },
+      '0x89': { name: 'Polygon', symbol: 'MATIC', preferred: false },
+      '0x38': { name: 'BSC', symbol: 'BNB', preferred: false },
+      '0xa': { name: 'Optimism', symbol: 'ETH', preferred: false }
+    };
 
-      const message = "Iniciar sesión en Papoclub";
-      const signature = await signer.signMessage(message);
+    const PREFERRED_NETWORK = '0x1'; // Ethereum Mainnet
 
-      const tokenAddress = "0xef3daa5fda8ad7aabff4658f1f78061fd626b8f0";
-      const tokenABI = ["function balanceOf(address) view returns (uint256)"];
-      const contract = new ethers.Contract(tokenAddress, tokenABI, provider);
-      const balance = await contract.balanceOf(address);
-
-      if (balance.gt(0)) {
-        alert("✅ Login exitoso como holder del token MUZZ\n" + address);
-        goToScreen("screen-main");
-      } else {
-        alert("🚫 No eres holder del token MUZZ.");
+    // --- Configuración del NFT para autenticación ---
+    const NFT_CONTRACT_ADDRESS = '0x508bB8f4A05E09EceAc219BF46C2D2830c2Ca235';
+    const TOKEN_ID = 0; // El ID del Royal NFT específico
+    const ERC1155_ABI = [
+      // ABI mínimo para la función 'balanceOf'
+      {
+        "inputs": [
+          { "internalType": "address", "name": "account", "type": "address" },
+          { "internalType": "uint256", "name": "id", "type": "uint256" }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+          { "internalType": "uint256", "name": "", "type": "uint256" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
       }
-    } catch (err) {
-      console.error("Error Web3:", err);
-      alert("❌ Error al conectar o firmar. Intenta nuevamente o revisa tu wallet.");
+    ];
+    // -------------------------------------------------
+
+    let currentWallet = {
+      address: null,
+      balance: null,
+      chainId: null,
+      isConnected: false,
+      provider: null
+    };
+
+    let isConnecting = false;
+    let connectionAttempts = 0;
+    const MAX_CONNECTION_ATTEMPTS = 3;
+
+    // --- Variables para Web3 y el contrato NFT ---
+    let web3;
+    let royalNftContract;
+    // --------------------------------------------
+
+    // ===========================================
+    // DOM ELEMENTS
+    // ===========================================
+
+    const elements = {
+      connectMobile: document.getElementById('connectMobile'),
+      connectDesktop: document.getElementById('connectDesktop'),
+      mobileBtnText: document.getElementById('mobileBtnText'),
+      desktopBtnText: document.getElementById('desktopBtnText'),
+      loadingSpinner: document.getElementById('loadingSpinner'),
+      walletInfo: document.getElementById('walletInfo'),
+      walletAddress: document.getElementById('walletAddress'),
+      networkName: document.getElementById('networkName'),
+      walletBalance: document.getElementById('walletBalance'),
+      statusMessage: document.getElementById('statusMessage'),
+      statusContent: document.getElementById('statusContent'),
+      installWallet: document.getElementById('installWallet'),
+      continueBtn: document.getElementById('continueBtn'),
+      switchNetwork: document.getElementById('switchNetwork'),
+      debugInfo: document.getElementById('debugInfo')
+    };
+
+    // ===========================================
+    // UTILITY FUNCTIONS
+    // ===========================================
+
+    function showStatus(message, type = 'loading', duration = 0) {
+      elements.statusContent.innerHTML = message;
+      elements.statusMessage.className = `status-card status-${type}`;
+      elements.statusMessage.style.display = 'block';
+
+      if (duration > 0) {
+        setTimeout(() => {
+          elements.statusMessage.style.display = 'none';
+        }, duration);
+      }
     }
-  }
 
-  function goToScreen(id) {
-    document.querySelectorAll('.screen').forEach(screen => {
-      screen.classList.remove('active');
+    function hideStatus() {
+      elements.statusMessage.style.display = 'none';
+    }
+
+    function showLoading(show = true, isMobile = true) {
+      if (isMobile) {
+        elements.mobileBtnText.textContent = show ? 'Connecting...' : 'Connect Mobile Wallet';
+      } else {
+        elements.desktopBtnText.textContent = show ? 'Connecting...' : 'Connect with Desktop Wallet';
+      }
+    }
+
+    function debugLog(message, data = null) {
+      console.log(`[Wallet Debug] ${message}`, data || '');
+
+      // Show on screen if needed (development only)
+      if (window.location.hostname === 'localhost') {
+        const debugEl = elements.debugInfo;
+        debugEl.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+        debugEl.style.display = 'block';
+        setTimeout(() => debugEl.style.display = 'none', 3000);
+      }
+    }
+
+    function formatAddress(address) {
+      if (!address) return '-';
+      return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    }
+
+    async function formatBalance(balance, symbol = 'ETH') {
+      if (!balance) return '-';
+      const balanceInEth = parseFloat(balance) / Math.pow(10, 18);
+      return `${balanceInEth.toFixed(4)} ${symbol}`;
+    }
+
+    // ===========================================
+    // WALLET DETECTION AND VERIFICATION
+    // ===========================================
+
+    function isMobileDevice() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    function isMetaMaskMobile() {
+      return navigator.userAgent.includes('MetaMaskMobile');
+    }
+
+    function detectWallet() {
+      debugLog('Detecting wallet...');
+      const isMobile = isMobileDevice();
+      const isMMobile = isMetaMaskMobile();
+
+      debugLog('Device information', {
+        isMobile,
+        isMetaMaskMobile: isMMobile,
+        userAgent: navigator.userAgent
+      });
+
+      // If we're in MetaMask Mobile, we'll always have ethereum available
+      if (isMMobile) {
+        debugLog('MetaMask Mobile detected');
+        showMobileBrowserDetected();
+        return true;
+      }
+
+      // On mobile devices without MetaMask Mobile
+      if (isMobile && typeof window.ethereum === 'undefined') {
+        debugLog('Mobile device without MetaMask Mobile');
+        showMobileInstallInstructions();
+        return false;
+      }
+
+      // On mobile devices with normal browser that has ethereum
+      if (isMobile && typeof window.ethereum !== 'undefined') {
+        debugLog('Mobile device with ethereum provider');
+
+        // Check if it's MetaMask or show suggestion to use app
+        if (window.ethereum.isMetaMask) {
+          showStatus('MetaMask detected, but we recommend using the official mobile app', 'warning');
+          return true;
+        } else {
+          showMobileWalletDetected();
+          return false;
+        }
+      }
+
+      // Desktop/laptop
+      if (typeof window.ethereum === 'undefined') {
+        debugLog('Wallet not detected on desktop');
+        elements.installWallet.style.display = 'block';
+        elements.connectDesktop.style.display = 'none';
+        return false;
+      }
+
+      debugLog('Wallet detected correctly on desktop');
+      return true;
+    }
+
+    function showMobileBrowserDetected() {
+      elements.statusContent.innerHTML = `
+        <div style="text-align: center;">
+          <h3>📱 Mobile Wallet Detected</h3>
+          <p>You're using a mobile wallet browser</p>
+          <div style="color: #9966ff; margin: 10px 0;">✅ Ready to connect</div>
+        </div>
+      `;
+      elements.statusMessage.className = 'status-card status-success';
+      elements.statusMessage.style.display = 'block';
+    }
+
+    function showMobileInstallInstructions() {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const storeUrl = isIOS
+        ? 'https://apps.apple.com/app/metamask/id1438144202'
+        : 'https://play.google.com/store/apps/details?id=io.metamask';
+
+      elements.installWallet.innerHTML = `
+        <h3>📱 Mobile Wallet Required</h3>
+        <p>To use MuzzSnap on mobile, you need a mobile wallet app:</p>
+        <div style="margin: 20px 0;">
+          <strong>Option 1 (Recommended):</strong><br>
+          <a href="${storeUrl}" target="_blank" class="install-link" style="margin: 5px 0; display: inline-block;">
+            📲 Install Mobile Wallet
+          </a>
+          <p style="font-size: 0.9em; opacity: 0.8;">Then open this page from your wallet browser</p>
+        </div>
+        <div style="margin: 20px 0;">
+          <strong>Option 2:</strong><br>
+          <button onclick="openInWallet()" class="install-link" style="border: none; cursor: pointer;">
+            🔗 Open in Wallet
+          </button>
+          <p style="font-size: 0.9em; opacity: 0.8;">Try to open directly in your wallet</p>
+        </div>
+        <div style="margin: 20px 0; padding: 15px; background: rgba(255, 204, 102, 0.1); border-radius: 8px; border-left: 3px solid #ffcc66;">
+          <strong>💡 Instructions:</strong><br>
+          1. Install a mobile wallet<br>
+          2. Open the wallet app<br>
+          3. Tap the browser button (🌐)<br>
+          4. Navigate to this page<br>
+          5. Ready to connect!
+        </div>
+      `;
+      elements.installWallet.style.display = 'block';
+      elements.connectMobile.style.display = 'none';
+    }
+
+    function showMobileWalletDetected() {
+      elements.statusContent.innerHTML = `
+        <div style="text-align: center;">
+          <h3>⚠️ Unsupported Wallet Detected</h3>
+          <p>A wallet was detected but it's not supported</p>
+          <p>For the best mobile experience, use a supported wallet:</p>
+          <button onclick="showMobileInstallInstructions(); elements.statusMessage.style.display='none';"
+                  style="background: #ffcc66; color: #330066; border: none; padding: 10px 20px; border-radius: 8px; margin: 10px; cursor: pointer;">
+            View Instructions
+          </button>
+        </div>
+      `;
+      elements.statusMessage.className = 'status-card status-warning';
+      elements.statusMessage.style.display = 'block';
+    }
+
+    // ===========================================
+    // ADDITIONAL MOBILE FUNCTIONS
+    // ===========================================
+
+    function openInWallet() {
+      const currentUrl = window.location.href;
+      const walletUrl = `https://metamask.app.link/dapp/${currentUrl.replace(/^https?:\/\//, '')}`;
+
+      debugLog('Trying to open in wallet', { walletUrl });
+
+      // Create temporary link and click it
+      const link = document.createElement('a');
+      link.href = walletUrl;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showStatus('Redirecting to wallet...', 'loading', 3000);
+    }
+
+    function setupMobileOptimizations() {
+      if (!isMobileDevice()) return;
+
+      debugLog('Applying mobile optimizations...');
+
+      // Improve touch UX
+      document.body.style.touchAction = 'manipulation';
+
+      // Detect screen rotation
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+          debugLog('Rotation detected, adjusting interface');
+          // Force reflow to avoid layout issues
+          document.body.style.height = '100vh';
+          setTimeout(() => {
+            document.body.style.height = '';
+          }, 100);
+        }, 100);
+      });
+
+      // Optimize viewport on mobile
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+      }
+    }
+
+    // Global function to use from HTML
+    window.openInWallet = openInWallet;
+
+    // ===========================================
+    // WALLET CONNECTION
+    // ===========================================
+
+    async function connectWallet(isMobile = true) {
+      if (isConnecting) {
+        debugLog('Connection already in progress');
+        return;
+      }
+
+      if (connectionAttempts >= MAX_CONNECTION_ATTEMPTS) {
+        showStatus('Too many failed attempts. Please reload the page.', 'error');
+        return;
+      }
+
+      // Mobile-specific checks
+      if (isMobile && isMobileDevice() && !isMetaMaskMobile() && !window.ethereum?.isMetaMask) {
+        showMobileInstallInstructions();
+        return;
+      }
+
+      isConnecting = true;
+      connectionAttempts++;
+      showLoading(true, isMobile);
+
+      try {
+        debugLog(`Connection attempt #${connectionAttempts}`);
+
+        // Mobile-specific message
+        if (isMobileDevice()) {
+          showStatus('Connecting with mobile wallet...', 'loading');
+        } else {
+          showStatus('Connecting with wallet...', 'loading');
+        }
+
+        // Verify that ethereum is available just before connecting
+        if (typeof window.ethereum === 'undefined') {
+          throw new Error('Wallet is not available');
+        }
+
+        // Request connection
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts'
+        });
+
+        if (accounts.length === 0) {
+          throw new Error('No account selected');
+        }
+
+        debugLog('Connection successful', {
+          account: accounts[0],
+          isMobile: isMobileDevice(),
+          isMetaMaskMobile: isMetaMaskMobile()
+        });
+
+        // Update state
+        currentWallet.address = accounts[0];
+        currentWallet.isConnected = true;
+
+        // Get additional info
+        await updateWalletInfo();
+
+        // Show information
+        showWalletInfo();
+
+        const successMessage = isMobileDevice()
+          ? 'Mobile wallet connected successfully!'
+          : 'Wallet connected successfully!';
+        showStatus(successMessage, 'success', 3000);
+
+        // Reset attempts
+        connectionAttempts = 0;
+
+      } catch (error) {
+        debugLog('Connection error', error);
+        handleConnectionError(error);
+      } finally {
+        isConnecting = false;
+        showLoading(false, isMobile);
+      }
+    }
+
+    function handleConnectionError(error) {
+      let message = 'Unknown error';
+      let type = 'error';
+
+      if (error.code === 4001) {
+        message = 'Connection rejected by user';
+        type = 'warning';
+      } else if (error.code === -32002) {
+        message = 'There is already a pending request';
+        type = 'warning';
+      } else if (error.code === -32603) {
+        message = 'Internal wallet error';
+      } else if (error.message.includes('User rejected')) {
+        message = 'Connection canceled';
+        type = 'warning';
+      } else {
+        message = `Error: ${error.message}`;
+      }
+
+      showStatus(message, type, 5000);
+      debugLog('Handled error', { code: error.code, message: error.message });
+    }
+
+    // ===========================================
+    // WALLET INFORMATION AND NFT AUTHENTICATION
+    // ===========================================
+
+    async function initializeWeb3AndRoyalNFTContract() {
+      if (typeof window.ethereum !== 'undefined' && !web3) { // Solo inicializa si no existe
+        debugLog('Initializing Web3 and Royal NFT contract...');
+        try {
+          web3 = new Web3(window.ethereum);
+          royalNftContract = new web3.eth.Contract(ERC1155_ABI, NFT_CONTRACT_ADDRESS);
+          debugLog('Web3 and Royal NFT contract initialized successfully.');
+        } catch (error) {
+          debugLog('Error initializing Web3 or Royal NFT contract:', error);
+          showStatus('Error setting up contract interaction.', 'error', 5000);
+        }
+      } else if (web3) {
+        debugLog('Web3 and Royal NFT contract already initialized.');
+      } else {
+        debugLog('Ethereum provider not detected, cannot initialize Web3 for NFT check.');
+      }
+    }
+
+    async function updateWalletInfo() {
+      if (!currentWallet.address) return;
+
+      try {
+        debugLog('Updating wallet information...');
+
+        // Get current network
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        currentWallet.chainId = chainId;
+
+        // Get balance
+        const balance = await window.ethereum.request({
+          method: 'eth_getBalance',
+          params: [currentWallet.address, 'latest']
+        });
+        currentWallet.balance = balance;
+
+        debugLog('Information updated', {
+          chainId,
+          balance: parseInt(balance, 16)
+        });
+
+      } catch (error) {
+        debugLog('Error updating information', error);
+        showStatus('Error getting wallet information', 'warning', 3000);
+      }
+    }
+
+    async function checkRoyalNFTOwnership(walletAddress) {
+      if (!royalNftContract) {
+        debugLog('Royal NFT contract not initialized. Cannot check ownership.');
+        showStatus('Cannot verify NFT: Contract not loaded.', 'error', 3000);
+        elements.continueBtn.disabled = true;
+        return false;
+      }
+
+      if (currentWallet.chainId !== PREFERRED_NETWORK) {
+        debugLog('User is not on Ethereum Mainnet. Skipping NFT check.');
+        showStatus('Please switch to Ethereum Mainnet to verify NFT ownership.', 'warning');
+        elements.continueBtn.disabled = true;
+        return false;
+      }
+
+      try {
+        showStatus('Verifying Royal NFT ownership...', 'loading');
+        // Llama a la función 'balanceOf' en el contrato ERC-1155
+        const balance = await royalNftContract.methods.balanceOf(walletAddress, TOKEN_ID).call();
+
+        debugLog(`NFT balance for ${walletAddress} on token ID ${TOKEN_ID}:`, balance.toString());
+
+        const hasRoyalNFT = parseInt(balance.toString()) > 0;
+
+        if (hasRoyalNFT) {
+          showStatus('¡Autenticación por NFT exitosa! Puedes continuar.', 'success', 3000);
+          return true;
+        } else {
+          showStatus('Autenticación fallida: No posees el Royal NFT #0 requerido.', 'error');
+          return false;
+        }
+      } catch (error) {
+        debugLog('Error checking Royal NFT ownership:', error);
+        showStatus('Error al verificar el NFT Royal. Intenta de nuevo.', 'error', 5000);
+        return false;
+      }
+    }
+
+
+    async function showWalletInfo() {
+      if (!currentWallet.isConnected) return;
+
+      // Show address
+      elements.walletAddress.textContent = formatAddress(currentWallet.address);
+
+      // Show network
+      const network = SUPPORTED_NETWORKS[currentWallet.chainId];
+      if (network) {
+        elements.networkName.textContent = network.name;
+        elements.switchNetwork.style.display = 'none';
+      } else {
+        elements.networkName.textContent = `Unknown network (${currentWallet.chainId})`;
+        elements.switchNetwork.style.display = 'block';
+      }
+
+      // Show balance
+      if (currentWallet.balance) {
+        const symbol = network ? network.symbol : 'ETH';
+        formatBalance(parseInt(currentWallet.balance, 16), symbol)
+          .then(formattedBalance => {
+            elements.walletBalance.textContent = formattedBalance;
+          });
+      }
+
+      // Show section
+      elements.walletInfo.style.display = 'block';
+      elements.continueBtn.style.display = 'block'; // Asegura que el botón se muestre
+
+      // Deshabilita el botón por defecto hasta que la verificación sea exitosa
+      elements.continueBtn.disabled = true;
+
+
+      // Verifica si está en la red correcta
+      const isCorrectNetwork = currentWallet.chainId === PREFERRED_NETWORK;
+      if (!isCorrectNetwork) {
+        showStatus('Por favor, cambia a la red Ethereum Mainnet para continuar.', 'warning');
+        elements.switchNetwork.style.display = 'block';
+      } else {
+        // Solo si la red es correcta, procede con la verificación del NFT
+        const hasNFT = await checkRoyalNFTOwnership(currentWallet.address);
+        elements.continueBtn.disabled = !hasNFT; // Habilita si tiene el NFT
+      }
+    }
+
+    // ===========================================
+    // NETWORK SWITCHING
+    // ===========================================
+
+    async function switchToEthereum() {
+      try {
+        debugLog('Switching to Ethereum Mainnet...');
+        showStatus('Switching network...', 'loading');
+
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: PREFERRED_NETWORK }],
+        });
+
+        // La verificación de NFT se ejecutará automáticamente después de chainChanged
+        showStatus('Network switched successfully', 'success', 3000);
+
+      } catch (error) {
+        debugLog('Error switching network', error);
+
+        if (error.code === 4902) {
+          showStatus('Ethereum Mainnet is not configured in your wallet', 'error');
+        } else {
+          showStatus('Error switching network', 'error', 3000);
+        }
+      }
+    }
+
+    // ===========================================
+    // WALLET EVENT LISTENERS
+    // ===========================================
+
+    function setupWalletListeners() {
+      if (!window.ethereum) return;
+
+      // Account change
+      window.ethereum.on('accountsChanged', (accounts) => {
+        debugLog('Account change detected', accounts);
+
+        if (accounts.length === 0) {
+          // User disconnected
+          resetWalletState();
+          showStatus('Wallet disconnected', 'warning', 3000);
+        } else if (accounts[0] !== currentWallet.address) {
+          // New account
+          currentWallet.address = accounts[0];
+          updateWalletInfo().then(() => showWalletInfo());
+          showStatus('Account changed', 'success', 2000);
+        }
+      });
+
+      // Network change
+      window.ethereum.on('chainChanged', (chainId) => {
+        debugLog('Network change detected', chainId);
+        currentWallet.chainId = chainId;
+        updateWalletInfo().then(() => showWalletInfo()); // Re-evaluate NFT ownership based on new chain
+      });
+
+      // Connection/disconnection
+      window.ethereum.on('connect', (connectInfo) => {
+        debugLog('Wallet connected', connectInfo);
+      });
+
+      window.ethereum.on('disconnect', (error) => {
+        debugLog('Wallet disconnected', error);
+        resetWalletState();
+        showStatus('Connection lost with wallet', 'error');
+      });
+    }
+
+    function resetWalletState() {
+      currentWallet = {
+        address: null,
+        balance: null,
+        chainId: null,
+        isConnected: false,
+        provider: null
+      };
+
+      elements.walletInfo.style.display = 'none';
+      elements.continueBtn.style.display = 'none';
+      elements.continueBtn.disabled = true; // Asegura que esté deshabilitado
+      hideStatus();
+    }
+
+    // ===========================================
+    // DOM EVENT LISTENERS
+    // ===========================================
+
+    elements.connectMobile.addEventListener('click', () => connectWallet(true));
+    elements.connectDesktop.addEventListener('click', () => connectWallet(false));
+    elements.switchNetwork.addEventListener('click', switchToEthereum);
+
+    elements.continueBtn.addEventListener('click', () => {
+      if (!currentWallet.isConnected) {
+        showStatus('Primero conecta tu cartera.', 'warning', 3000);
+        return;
+      }
+
+      if (currentWallet.chainId !== PREFERRED_NETWORK) {
+        showStatus('Cambia a Ethereum Mainnet primero.', 'warning', 3000);
+        return;
+      }
+
+      // Re-verificar la propiedad del NFT antes de continuar (por si acaso)
+      checkRoyalNFTOwnership(currentWallet.address).then(hasNFT => {
+        if (hasNFT) {
+          // Guardar el estado para la siguiente página
+          sessionStorage.setItem('walletConnected', JSON.stringify({
+            address: currentWallet.address,
+            chainId: currentWallet.chainId,
+            timestamp: Date.now()
+          }));
+
+          showStatus('Redirigiendo a MuzzSnap...', 'success');
+
+          // Redirigir a MuzzSnap (o al siguiente paso)
+          setTimeout(() => {
+            window.location.href = 'muzzsnap.html';
+          }, 2000);
+        } else {
+          showStatus('No posees el Royal NFT #0 necesario para acceder.', 'error');
+          elements.continueBtn.disabled = true;
+        }
+      });
     });
-    document.getElementById(id).classList.add('active');
-  }
-</script>
 
+    // Filter button interactions
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // ===========================================
+    // INITIALIZATION
+    // ===========================================
+
+    async function initialize() {
+      debugLog('Initializing application...');
+
+      // Apply mobile optimizations
+      setupMobileOptimizations();
+
+      // Check if wallet is installed
+      if (!detectWallet()) {
+        return;
+      }
+
+      // Setup listeners
+      setupWalletListeners();
+
+      // Initialize Web3 and the NFT contract early if window.ethereum exists
+      await initializeWeb3AndRoyalNFTContract();
+
+      // On mobile wallet, try to verify existing connection
+      if (isMetaMaskMobile()) {
+        debugLog('Initializing in mobile wallet');
+
+        // Small delay to ensure ethereum is fully loaded
+        setTimeout(async () => {
+          const hasConnection = await checkExistingConnection();
+
+          if (hasConnection) {
+            debugLog('Existing connection restored in mobile wallet');
+          } else {
+            debugLog('No previous connection in mobile wallet');
+          }
+        }, 500);
+      } else {
+        // Desktop or normal mobile browser
+        const hasConnection = await checkExistingConnection();
+
+        if (hasConnection) {
+          debugLog('Existing connection restored');
+        } else {
+          debugLog('No previous connection, waiting for user action');
+        }
+      }
+    }
+
+    async function checkExistingConnection() {
+      if (!window.ethereum) return false;
+
+      try {
+        debugLog('Checking existing connection...');
+        const accounts = await window.ethereum.request({
+          method: 'eth_accounts'
+        });
+
+        if (accounts.length > 0) {
+          debugLog('Existing connection found', { account: accounts[0] });
+          currentWallet.address = accounts[0];
+          currentWallet.isConnected = true;
+
+          await updateWalletInfo();
+          showWalletInfo(); // Esto ahora maneja la verificación del NFT
+          return true;
+        }
+
+        debugLog('No existing connections');
+        return false;
+
+      } catch (error) {
+        debugLog('Error checking existing connection', error);
+        return false;
+      }
+    }
+
+    // Global function for mobile debugging
+    window.debugWallet = () => {
+      console.log('=== DEBUG WALLET ===');
+      console.log('isMobile:', isMobileDevice());
+      console.log('isMetaMaskMobile:', isMetaMaskMobile());
+      console.log('hasEthereum:', typeof window.ethereum !== 'undefined');
+      console.log('isMetaMask:', window.ethereum?.isMetaMask);
+      console.log('userAgent:', navigator.userAgent);
+      console.log('currentWallet:', currentWallet);
+      console.log('web3:', web3);
+      console.log('royalNftContract:', royalNftContract);
+      console.log('==================');
+    };
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+      initialize();
+    }
+
+    // ===========================================
+    // GLOBAL ERROR HANDLING
+    // ===========================================
+
+    window.addEventListener('error', (event) => {
+      debugLog('Global error captured', event.error);
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+      debugLog('Unhandled promise rejection', event.reason);
+    });
+  </script>
 </body>
 </html>
