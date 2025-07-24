@@ -2,10 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>MuzzSnap</title>
+  <title>MuzzSnap - Connect Wallet</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
   <style>
+    /* ... (Tu CSS existente para index.html) ... */
     * {
       box-sizing: border-box;
     }
@@ -1181,9 +1182,9 @@
 
           showStatus('Redirigiendo a MuzzSnap...', 'success');
 
-          // Redirigir a MuzzSnap (o al siguiente paso)
+          // *** CAMBIO CLAVE AQUÍ: REDIRECCIONAR A MUZZSNAP.HTML ***
           setTimeout(() => {
-            window.location.href = 'muzzsnap.html';
+            window.location.href = 'muzzsnap.html'; // Redirige a la página del chat
           }, 2000);
         } else {
           showStatus('No posees el Royal NFT #0 necesario para acceder.', 'error');
