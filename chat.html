@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>MuzzSnap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* Global Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1a0033, #000000); /* Violeta oscuro a Negro */
+      color: #ffffff; /* Texto blanco principal */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding-top: 80px; /* Espacio para el header fijo */
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* MuzzSnap Header (Top Bar) */
+    .muzzsnap-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.8); /* Negro semitransparente */
+      backdrop-filter: blur(10px);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .muzzsnap-logo {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #cc99ff; /* Violeta brillante para el logo */
+      text-shadow: 0 0 15px rgba(204, 153, 255, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .muzzsnap-logo span {
+      font-size: 1.2em;
+    }
+
+    .profile-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+      font-size: 1.1em;
+      transition: color 0.3s ease;
+    }
+
+    .profile-btn:hover {
+      color: #cc99ff; /* Violeta brillante al pasar el ratón */
+    }
+
+    .profile-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #cc99ff; /* Borde violeta para el avatar */
+      box-shadow: 0 0 10px rgba(204, 153, 255, 0.4);
+    }
+
+    /* Main Content Area (Feed) */
+    .muzzsnap-feed {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 800px; /* Ancho máximo para el feed */
+      margin: 0 auto; /* Centrar el feed */
+    }
+
+    .feed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .feed-header h2 {
+      margin: 0;
+      font-size: 1.8em;
+      color: #ffffff;
+    }
+
+    .action-btn {
+      background: linear-gradient(145deg, #9933ff, #cc0066); /* Violeta a Rojo */
+      border: none;
+      color: #ffffff;
+      padding: 10px 20px;
+      font-weight: bold;
+      border-radius: 25px;
+      box-shadow: 0 5px 15px rgba(153, 51, 255, 0.4);
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(153, 51, 255, 0.6);
+    }
+
+    /* Feed Container (Scrollable Messages) */
+    .feed-container {
+      background: rgba(0, 0, 0, 0.3); /* Fondo semitransparente para el contenedor de posts */
+      border-radius: 20px;
+      padding: 15px;
+      margin-bottom: 20px;
+      flex: 1;
+      overflow-y: auto;
+      box-shadow: 0 0 20px rgba(204, 153, 255, 0.2);
+      width: 100%; /* Ocupa todo el ancho del muzzsnap-feed */
+    }
+
+    /* Scrollbar Styling */
+    .feed-container::-webkit-scrollbar {
+      width: 10px;
+    }
+    .feed-container::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+    .feed-container::-webkit-scrollbar-thumb {
+      background-color: rgba(204, 153, 255, 0.5); /* Violeta semitransparente */
+      border-radius: 10px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+    }
+    .feed-container::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(204, 153, 255, 0.8);
+    }
+
+    /* Individual Feed Post */
+    .feed-post {
+      background: rgba(255, 255, 255, 0.08); /* Blanco muy tenue semitransparente */
+      border-radius: 16px;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      word-wrap: break-word;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: transform 0.2s ease;
+    }
+
+    .feed-post:hover {
+        transform: translateY(-3px);
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .post-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #ff0055; /* Borde rojo sutil */
+    }
+
+    .post-author {
+      font-weight: bold;
+      color: #cc99ff; /* Violeta para el autor */
+      font-size: 1.1em;
+    }
+
+    .post-time {
+      font-size: 0.8em;
+      color: #b3b3b3; /* Gris claro para la hora */
+      margin-left: auto; /* Empuja la hora a la derecha */
+    }
+
+    .post-content {
+      color: #e6e6e6; /* Gris más claro para el contenido */
+    }
+
+    /* Post Composer (Input Area) */
+    .post-composer {
+      background: rgba(255, 255, 255, 0.1); /* Blanco tenue semitransparente */
+      border-radius: 20px;
+      padding: 15px;
+      box-shadow: 0 0 20px rgba(204, 153, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 700px; /* Ancho máximo para el compositor */
+      margin-bottom: 20px; /* Espacio debajo */
+    }
+
+    .composer-textarea {
+      width: 100%;
+      height: 60px; /* Más alto para sentirse como una "publicación" */
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 12px;
+      font-size: 1.1em;
+      resize: vertical; /* Permitir redimensionar verticalmente */
+      background: rgba(0, 0, 0, 0.5); /* Negro semitransparente */
+      color: #ffffff;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .composer-textarea:focus {
+      border-color: #cc99ff; /* Borde violeta al enfocar */
+    }
+
+    .send-btn {
+      background: linear-gradient(145deg, #cc0066, #ff3399); /* Rojo a Rosa */
+      color: #ffffff;
+      border: none;
+      padding: 12px 30px;
+      font-weight: bold;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 51, 153, 0.4);
+      font-size: 1.1em;
+    }
+
+    .send-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 51, 153, 0.6);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding-top: 70px;
+      }
+
+      .muzzsnap-header {
+        padding: 12px 15px;
+      }
+
+      .muzzsnap-logo {
+        font-size: 1.5em;
+      }
+
+      .profile-avatar {
+        width: 35px;
+        height: 35px;
+      }
+
+      .muzzsnap-feed {
+        padding: 15px;
+      }
+
+      .feed-header h2 {
+        font-size: 1.5em;
+      }
+
+      .action-btn {
+        padding: 8px 15px;
+        font-size: 0.9em;
+      }
+
+      .feed-container {
+        padding: 10px;
+      }
+
+      .feed-post {
+        padding: 12px 15px;
+      }
+
+      .post-author {
+        font-size: 1em;
+      }
+
+      .post-composer {
+        padding: 10px;
+      }
+
+      .composer-textarea {
+        height: 50px;
+        font-size: 1em;
+      }
+
+      .send-btn {
+        padding: 10px 25px;
+        font-size: 1em;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .muzzsnap-header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px 15px;
+      }
+      .profile-btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .muzzsnap-feed {
+        padding: 10px;
+      }
+      .feed-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+      .action-btn {
+        width: 100%;
+      }
+      .post-composer {
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="muzzsnap-header">
+    <div class="muzzsnap-logo">
+      <span>📸</span> MuzzSnap
+    </div>
+    <button id="profileBtn" class="profile-btn">
+      <img id="userAvatar" src="https://via.placeholder.com/40?text=👤" alt="Avatar de usuario" class="profile-avatar">
+      <span id="userName">Cargando...</span>
+    </button>
+  </header>
+
+  <div class="muzzsnap-feed">
+    <div class="feed-header">
+      <h2>🔥 MuzzSnap Feed</h2>
+      <button class="action-btn" onclick="window.location.href='index.html';">Cerrar Sesión</button>
+    </div>
+
+    <div class="feed-container">
+      <div id="mensajes-chat">
+        </div>
+    </div>
+
+    <div class="post-composer">
+      <textarea id="mensaje" class="composer-textarea" placeholder="¿Qué estás pensando, MuzzSnapper?"></textarea>
+      <button id="btnEnviar" class="send-btn">Publicar MuzzSnap</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    // --- Firebase Configuration (Replace with your actual keys) ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCJmOS9MjDhjJrKCMIUVbgmRiEi2xLIkrQ",
+      authDomain: "papoclub-737ac.firebaseapp.com",
+      projectId: "papoclub-737ac",
+      storageBucket: "papoclub-737ac.appspot.com",
+      messagingSenderId: "76712370993",
+      appId: "1:76712370993:web:2d2646b258efbccf68c73e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser;
+    const adminEmail = "borincano@gmail.com"; // Define the admin email here
+
+    // --- DOM Elements ---
+    const userNameSpan = document.getElementById("userName");
+    const userAvatarImg = document.getElementById("userAvatar");
+    const messagesContainer = document.getElementById("mensajes-chat");
+    const messageTextarea = document.getElementById("mensaje");
+    const sendButton = document.getElementById("btnEnviar");
+
+    // --- Authentication State Listener ---
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        // No user logged in, redirect to login page (index.html is assumed to be your login)
+        location.href = "index.html";
+        return;
+      }
+      currentUser = user;
+      await loadUserProfile(); // Load user specific data
+      listenForPublicMessages(); // Start listening for messages
+    });
+
+    // --- Load User Profile (for display in header) ---
+    async function loadUserProfile() {
+      const perfilSnap = await getDoc(doc(db, "users", currentUser.uid));
+      const perfil = perfilSnap.exists() ? perfilSnap.data() : {};
+
+      userNameSpan.textContent = perfil.user || currentUser.email.split("@")[0];
+      userAvatarImg.src = perfil.avatar || "https://via.placeholder.com/40?text=👤"; // Default avatar
+    }
+
+    // --- Send Message Function ---
+    async function sendMessage() {
+      const text = messageTextarea.value.trim();
+      if (!text) {
+        alert("¡Escribe tu MuzzSnap antes de publicarlo!");
+        return;
+      }
+
+      // Anti-URL for all except admin
+      if (currentUser.email !== adminEmail && /https?:\/\//i.test(text)) {
+        messageTextarea.value = "";
+        alert("Mensajes con enlaces no permitidos.");
+        return;
+      }
+
+      const perfilSnap = await getDoc(doc(db, "users", currentUser.uid));
+      const perfil = perfilSnap.exists() ? perfilSnap.data() : {};
+
+      await addDoc(collection(db, "chatPublico"), {
+        texto: text,
+        uid: currentUser.uid,
+        nick: perfil.user || currentUser.email.split("@")[0],
+        avatar: perfil.avatar || "https://via.placeholder.com/30?text=👤",
+        fecha: new Date()
+      });
+
+      // Delay for message sending to prevent spam
+      messageTextarea.value = "";
+      messageTextarea.disabled = true;
+      sendButton.disabled = true;
+      messageTextarea.placeholder = "¡MuzzSnap publicado! Espera un momento...";
+      setTimeout(() => {
+        messageTextarea.disabled = false;
+        sendButton.disabled = false;
+        messageTextarea.placeholder = "¿Qué estás pensando, MuzzSnapper?";
+      }, 2000);
+    }
+
+    // --- Listen for Public Messages ---
+    function listenForPublicMessages() {
+      const q = query(collection(db, "chatPublico"), orderBy("fecha", "asc"));
+      onSnapshot(q, (snap) => {
+        const wasAtBottom = (messagesContainer.scrollTop + messagesContainer.clientHeight >= messagesContainer.scrollHeight - 10);
+        messagesContainer.innerHTML = ""; // Clear existing messages
+        snap.forEach(doc => {
+          const m = doc.data();
+          const date = new Date(m.fecha.seconds * 1000);
+          const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const dateString = date.toLocaleDateString();
+
+          messagesContainer.innerHTML += `
+            <div class="feed-post">
+              <div class="post-header">
+                <img src="${m.avatar}" alt="Avatar" class="post-avatar">
+                <span class="post-author">@${m.nick}</span>
+                <span class="post-time">${dateString} ${timeString}</span>
+              </div>
+              <p class="post-content">${m.texto}</p>
+            </div>`;
+        });
+        if (wasAtBottom) messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to bottom if user was there
+      });
+    }
+
+    // --- Event Listeners ---
+    sendButton.addEventListener("click", sendMessage);
+
+    // Optional: Allow sending message with Enter key (Shift+Enter for new line)
+    messageTextarea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault(); // Prevent new line
+        sendMessage();
+      }
+    });
+
+    // Handle logout (though your previous menu.html might also have this)
+    document.getElementById("profileBtn").addEventListener("click", () => {
+        // Placeholder for profile actions, e.g., open profile modal or navigate
+        alert("Perfil de MuzzSnapper (funcionalidad futura)");
+        // auth.signOut(); // This would log out the user
+    });
+
+    // Initial load, but onAuthStateChanged will handle most of it
+    // loadUserProfile();
+    // listenForPublicMessages();
+  </script>
+</body>
+</html>
